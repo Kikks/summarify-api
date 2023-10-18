@@ -1,0 +1,48 @@
+{
+  "compilerOptions": {
+    "experimentalDecorators": true,
+    "allowJs": false,
+    "allowSyntheticDefaultImports": true,
+    "alwaysStrict": true,
+    "checkJs": false,
+    "esModuleInterop": true,
+    "emitDecoratorMetadata": true,
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "noUnusedLocals": false,
+    "outDir": "./build",
+    "resolveJsonModule": true,
+    "rootDir": "./",
+    "sourceMap": true,
+    "strict": false,
+    "strictNullChecks": true,
+    "strictPropertyInitialization": false,
+    "target": "es2018",
+    "typeRoots": [
+      "node_modules/@types",
+      "types"
+    ],
+    "baseUrl": "./",
+    "lib": [
+      "ES2021.String",
+      "es2018",
+      "ES2020",
+      "DOM"
+    ]
+  },
+  "exclude": [
+    "node_modules",
+    "build"
+  ],
+  "include": [
+    "src",
+  ],
+  "ts-node": {
+    "require": [
+      "tsconfig-paths/register"
+    ]
+  }
+}
