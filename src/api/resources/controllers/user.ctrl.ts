@@ -5,6 +5,7 @@ import { SUCCESSFUL } from '../../lib/constants';
 import summarifyError from '../../lib/error';
 import { failure, success } from '../../lib/response';
 import UserService from '../services/user.svc';
+import { validateUpdateUserInputs } from '../validators/user.vld';
 
 const handleGetUser = async (req: Request, res: Response) => {
   try {
@@ -62,4 +63,32 @@ const handleGetUsers = async (req: Request, res: Response) => {
   }
 };
 
-export { handleGetUser, handleGetUsers };
+const handleUpdateUser = async (req: Request, res: Response) => {
+  try {
+    const { firstName, lastName } = validateUpdateUserInputs(req, res);
+
+    const userObject: any = res.locals.user;
+    const user = await UserService.updateUser({
+      query: { _id: userObject?._id },
+      userDetails: { firstName, lastName },
+    });
+
+    if (!user) throw new summarifyError('User not found', 404);
+
+    return success({
+      res,
+      data: user,
+      message: SUCCESSFUL,
+      httpCode: 200,
+    });
+  } catch (error: any) {
+    return failure({
+      res,
+      message: error.message || 'An error occured while updating user.',
+      errStack: error.stack,
+      httpCode: error.code || 500,
+    });
+  }
+};
+
+export { handleGetUser, handleGetUsers, handleUpdateUser };

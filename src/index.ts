@@ -1,10 +1,11 @@
 import * as dotenv from 'dotenv';
 dotenv.config();
 
+import expreSession from 'express-session';
 import * as http from 'http';
 import passport from 'passport';
 
-import { NODE_ENV, PORT } from './api/lib/constants';
+import { NODE_ENV, PORT, SESSION_SECRET } from './api/lib/constants';
 import { startdb } from './db';
 import { summarifyAPI } from './server';
 
@@ -53,6 +54,13 @@ const onListening = () => {
 /** Initialize api service */
 const api = new summarifyAPI();
 const app = api.app;
+app.use(
+  expreSession({
+    secret: SESSION_SECRET,
+    resave: true,
+    saveUninitialized: true,
+  })
+);
 app.use(passport.initialize());
 app.use(passport.session());
 

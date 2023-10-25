@@ -1,12 +1,16 @@
 import Router from 'express-promise-router';
 
 import { checkUser } from '../middlewares/auth';
-import { handleLogin, handleRegister } from '../resources/controllers/auth.ctrl';
+import {
+  handleChangePassword,
+  handleLogin,
+  handleRegister,
+} from '../resources/controllers/auth.ctrl';
 
 const router = Router();
 
-router.route('/login').post(checkUser, handleLogin);
-router.route('/admin/login').post(handleLogin);
-router.route('/admin/register').post(handleRegister);
+router.route('/login').post(handleLogin);
+router.route('/register').post(handleRegister);
+router.route('/change-password').post(checkUser, handleChangePassword);
 
 export default router;

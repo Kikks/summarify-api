@@ -1,19 +1,14 @@
-// import { NextFunction, Request, Response } from 'express'
+import { Request, Response } from 'express';
+import Joi from 'joi';
 
-// const validateAddElectionToOrganizationInput = (
-//   req: Request,
-//   res: Response,
-//   next: NextFunction
-// ) => {
-//   const { election_id } = req.body
-//   const errors: { [key: string]: string } = {}
+import { validateShema } from './helpers.vld';
 
-//   if (isEmpty(election_id)) errors.election_id = 'Election cannot be empty'
+const updateUserSchema = Joi.object({
+  firstName: Joi.string(),
+  lastName: Joi.string(),
+});
 
-//   if (Object.keys(errors).length > 0) {
-//     return inputError(errors, res)
-//   } else {
-//     return next()
-//   }
-// }
-export {};
+const validateUpdateUserInputs = (req: Request, res: Response) =>
+  validateShema(updateUserSchema, req, res);
+
+export { validateUpdateUserInputs };

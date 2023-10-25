@@ -15,8 +15,15 @@ const registerSchema = Joi.object({
   lastName: Joi.string().required(),
 });
 
+const changePasswordSchema = Joi.object({
+  oldPassword: Joi.string().required(),
+  newPassword: Joi.string().required(),
+});
+
 const validateLoginInputs = (req: Request, res: Response) => validateShema(loginSchema, req, res);
 const validateRegisterInputs = (req: Request, res: Response) =>
   validateShema(registerSchema, req, res);
+const validateChangePasswordInputs = (req: Request, res: Response) =>
+  validateShema(changePasswordSchema, req, res);
 
-export { validateLoginInputs, validateRegisterInputs };
+export { validateLoginInputs, validateRegisterInputs, validateChangePasswordInputs };

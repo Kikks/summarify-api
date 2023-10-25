@@ -6,7 +6,11 @@ import { failure, success } from '../../lib/response';
 import { generateToken } from '../../lib/token';
 import { OUser } from '../interfaces/user.intf';
 import UserService from '../services/user.svc';
-import { validateLoginInputs, validateRegisterInputs } from '../validators/auth.vld';
+import {
+  validateChangePasswordInputs,
+  validateLoginInputs,
+  validateRegisterInputs,
+} from '../validators/auth.vld';
 
 const handleRegister = async (req: Request, res: Response) => {
   try {
@@ -55,9 +59,14 @@ const handleLogin = async (req: Request, res: Response) => {
       return success({
         res,
         data: {
-          user,
+          user: {
+            _id: user._id,
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+          },
           token: generateToken({
-            id: user._id,
+            _id: user._id,
             email: user.email,
             firstName: user.firstName,
             lastName: user.lastName,
@@ -77,4 +86,49 @@ const handleLogin = async (req: Request, res: Response) => {
   }
 };
 
-export { handleRegister, handleLogin };
+const handleChangePassword = async (req: Request, res: Response) => {
+  try {
+    const { oldPassword, newPassword } = validateChangePasswordInputs(req, res);
+
+    const userObject: any = res.locals.user;
+    const user = await UserService.getUser({
+      _id: userObject?._id,
+    });
+
+    if (!user) {
+      return failure({
+        res,
+        message: 'User not found',
+        httpCode: 404,
+      });
+    }
+
+    // @ts-ignore
+    return user.changePassword(oldPassword, newPassword, (err: any) => {
+      if (err) {
+        console.log({ err });
+        return failure({
+          res,
+          message: err?.message || 'Your old password is incorrect',
+          httpCode: 500,
+        });
+      }
+
+      return success({
+        res,
+        data: user,
+        message: SUCCESSFUL,
+        httpCode: 200,
+      });
+    });
+  } catch (error: any) {
+    return failure({
+      res,
+      message: error.message || 'An error occured while changing user password.',
+      errStack: error.stack,
+      httpCode: error.code || 500,
+    });
+  }
+};
+
+export { handleRegister, handleLogin, handleChangePassword };
