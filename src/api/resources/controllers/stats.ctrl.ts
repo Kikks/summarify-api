@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
-import { SUCCESSFUL } from 'src/api/lib/constants';
-import { failure, success } from 'src/api/lib/response';
 
+import { SUCCESSFUL } from '../../lib/constants';
+import { failure, success } from '../../lib/response';
 import ConversationService from '../services/conversation.svc';
 import DocumentService from '../services/document.svc';
 import SummaryService from '../services/summary.svc';

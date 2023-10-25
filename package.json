@@ -1,7 +1,7 @@
 {
-  "name": "vote023-ootp",
+  "name": "summarify",
   "version": "1.0.0",
-  "description": "API service for vote023-ootp",
+  "description": "API service for summarify",
   "main": "index.ts",
   "directories": {
     "test": "test"
@@ -14,14 +14,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Kikks/quickETA-server"
+    "url": "git+https://github.com/Kikks/summarify-ui"
   },
   "author": "Emergent Labs",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/Kikks/quickETA-server/issues"
+    "url": "https://github.com/Kikks/summarify-ui/issues"
   },
-  "homepage": "https://github.com/Kikks/quickETA-server",
+  "homepage": "https://github.com/Kikks/summarify-ui",
   "dependencies": {
     "app-root-path": "^3.0.0",
     "axios": "^0.27.2",

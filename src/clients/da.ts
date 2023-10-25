@@ -1,5 +1,6 @@
 import axios from 'axios';
-import { DA_SERVER } from 'src/api/lib/constants';
+
+import { DA_SERVER } from '../api/lib/constants';
 
 const baseAxiosMethod = axios.create({
   baseURL: DA_SERVER,

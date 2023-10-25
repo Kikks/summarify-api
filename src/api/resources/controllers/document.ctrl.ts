@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { SortOrder } from 'mongoose';
-import { queryDocument, summarizeText } from 'src/clients/da';
 
+import { queryDocument, summarizeText } from '../../../clients/da';
 import { SUCCESSFUL } from '../../lib/constants';
 import summarifyError from '../../lib/error';
 import { failure, success } from '../../lib/response';
