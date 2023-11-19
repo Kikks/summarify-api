@@ -1,10 +1,11 @@
 import { Request, Response } from 'express';
 import { SortOrder } from 'mongoose';
 
-import { queryDocument, summarizeText } from '../../../clients/da';
+import { addSummarizeJobToQueue, queryDocument } from '../../../clients/da';
 import { SUCCESSFUL } from '../../lib/constants';
 import summarifyError from '../../lib/error';
 import { failure, success } from '../../lib/response';
+import { ODocument } from '../interfaces/document.intf';
 import ConversationService from '../services/conversation.svc';
 import DocumentService from '../services/document.svc';
 import SummaryService from '../services/summary.svc';
@@ -79,20 +80,35 @@ const handleCreateDocument = async (req: Request, res: Response) => {
     const { title, content, fileType } = validateCreateDocumentInputs(req, res);
     const image = await generateImage();
 
-    const summaryText = await summarizeText(content);
-    const summary = await SummaryService.createSummary({
-      content: summaryText,
-      createdBy: user._id,
-    });
-
     const document = await DocumentService.createDocument({
       title,
       content,
       fileType,
       createdBy: user._id,
-      ...(summary ? { summary: summary._id } : {}),
+      summaryStatus: 'pending',
       ...(image ? { image } : {}),
     });
+
+    try {
+      const queued = await addSummarizeJobToQueue({
+        documentId: document._id,
+        text: document.content,
+        userId: user._id,
+      });
+
+      if (!queued) {
+        await DocumentService.updateDocument({
+          query: { _id: document._id },
+          documentDetails: { summaryStatus: 'failed' },
+        });
+      }
+    } catch (error) {
+      console.log({ error });
+      await DocumentService.updateDocument({
+        query: { _id: document._id },
+        documentDetails: { summaryStatus: 'failed' },
+      });
+    }
 
     return success({
       res,
@@ -235,12 +251,126 @@ const handleCreateDocumentConversation = async (req: Request, res: Response) => 
   }
 };
 
+const handleGenerateSummary = async (req: Request, res: Response) => {
+  try {
+    const user = res.locals.user;
+    const id = req.params.id;
+
+    const document = await DocumentService.getDocument({ _id: id, createdBy: user._id });
+    if (!document) throw new summarifyError('Document not found', 404);
+    if (document?.summary) throw new summarifyError('Document already summarized', 400);
+
+    let updatedDocument: ODocument | null;
+    try {
+      const queued = await addSummarizeJobToQueue({
+        documentId: document._id,
+        text: document.content,
+        userId: user._id,
+      });
+
+      updatedDocument = await DocumentService.updateDocument({
+        query: { _id: document._id },
+        documentDetails: { summaryStatus: queued ? 'pending' : 'failed' },
+      });
+    } catch (error) {
+      console.log({ error });
+      updatedDocument = await DocumentService.updateDocument({
+        query: { _id: document._id },
+        documentDetails: { summaryStatus: 'failed' },
+      });
+    }
+
+    return success({
+      res,
+      data: updatedDocument,
+      message: SUCCESSFUL,
+      httpCode: 200,
+    });
+
+    return success({
+      res,
+      data: updatedDocument,
+      message: SUCCESSFUL,
+      httpCode: 200,
+    });
+  } catch (error) {
+    return failure({
+      res,
+      message: error.message || 'An error occured while generating document summary.',
+      errStack: error.stack,
+      httpCode: error.code || 500,
+    });
+  }
+};
+
+const handleSummaryCreationWebhook = async (req: Request, res: Response) => {
+  try {
+    const { documentId, summary, userId } = req.body;
+    const document = await DocumentService.getDocument({ _id: documentId });
+    if (!document) throw new summarifyError('Document not found', 404);
+
+    const summaryObject = await SummaryService.createSummary({
+      content: summary,
+      createdBy: userId,
+    });
+
+    const updatedDocument = await DocumentService.updateDocument({
+      query: { _id: documentId },
+      documentDetails: { summary: summaryObject._id, summaryStatus: 'completed' },
+    });
+
+    return success({
+      res,
+      data: updatedDocument,
+      message: SUCCESSFUL,
+      httpCode: 200,
+    });
+  } catch (error) {
+    return failure({
+      res,
+      message: error.message || 'An error occured while creating document summary.',
+      errStack: error.stack,
+      httpCode: error.code || 500,
+    });
+  }
+};
+
+const handleSummaryFailedWebhook = async (req: Request, res: Response) => {
+  try {
+    const { documentId } = req.body;
+    const document = await DocumentService.getDocument({ _id: documentId });
+    if (!document) throw new summarifyError('Document not found', 404);
+
+    const updatedDocument = await DocumentService.updateDocument({
+      query: { _id: documentId },
+      documentDetails: { summaryStatus: 'failed' },
+    });
+
+    return success({
+      res,
+      data: updatedDocument,
+      message: SUCCESSFUL,
+      httpCode: 200,
+    });
+  } catch (error) {
+    return failure({
+      res,
+      message: error.message || 'An error occured while updating document failed summary status.',
+      errStack: error.stack,
+      httpCode: error.code || 500,
+    });
+  }
+};
+
 export {
   handleGetDocument,
   handleGetDocuments,
   handleUpdateDocument,
   handleCreateDocument,
   handleDeleteDocument,
+  handleGenerateSummary,
   handleGetDocumentConversations,
   handleCreateDocumentConversation,
+  handleSummaryCreationWebhook,
+  handleSummaryFailedWebhook,
 };

@@ -21,6 +21,11 @@ const DocumentSchema = new Schema<ODocument & MongooseDocument>(
       type: Schema.Types.ObjectId,
       ref: 'Summary',
     },
+    summaryStatus: {
+      type: String,
+      enum: ['pending', 'completed', 'failed'],
+      default: 'pending',
+    },
     createdBy: {
       type: Schema.Types.ObjectId,
       ref: 'User',

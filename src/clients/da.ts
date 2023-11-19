@@ -16,4 +16,17 @@ const queryDocument = async (query: string, text: string) => {
   return data?.data?.reply;
 };
 
-export { summarizeText, queryDocument };
+const addSummarizeJobToQueue = async ({
+  documentId,
+  text,
+  userId,
+}: {
+  documentId: string;
+  text: string;
+  userId: string;
+}) => {
+  const { data } = await baseAxiosMethod.post('/summarize-job', { documentId, text, userId });
+  return !!data?.data?.queued;
+};
+
+export { summarizeText, queryDocument, addSummarizeJobToQueue };

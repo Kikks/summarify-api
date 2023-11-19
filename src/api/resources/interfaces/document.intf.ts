@@ -11,6 +11,7 @@ export interface ODocument {
   content: string;
   fileType?: string;
   summary?: ObjectId | PopulatedDoc<OSummary & Document>;
+  summaryStatus?: 'pending' | 'completed' | 'failed';
   createdBy: ObjectId | PopulatedDoc<OUser & Document>;
   createdAt?: NativeDate;
   updatedAt?: NativeDate;
@@ -22,5 +23,6 @@ export interface IDocument {
   content: string;
   fileType?: string;
   summary?: ObjectId | string;
+  summaryStatus?: 'pending' | 'completed' | 'failed';
   createdBy: ObjectId | string;
 }
